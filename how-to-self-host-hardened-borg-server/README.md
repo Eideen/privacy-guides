@@ -22,9 +22,9 @@ Listed: true
 - When copy/pasting commands that start with `$`, strip out `$` as this character is not part of the command
 - When copy/pasting commands that start with `cat << "EOF"`, select all lines at once (from `cat << "EOF"` to `EOF` inclusively) as they are part of the same (single) command
 
-## Setup guide
+## 1 Setup guide Client  
 
-### Step 1: create `borg` SSH key pair (on computer)
+### 1.1: create `borg` SSH key pair (on computer)
 
 When asked for file in which to save key, enter `borg`.
 
@@ -33,87 +33,102 @@ When asked for passphrase, use output from `openssl rand -base64 24` (and store 
 ```console
 $ mkdir ~/.ssh
 
-$ cd ~/.ssh
-
-$ ssh-keygen -t rsa -C "borg"
-Generating public/private rsa key pair.
-Enter file in which to save the key (/Users/sunknudsen/.ssh/id_rsa): borg
-Enter passphrase (empty for no passphrase):
+$ ssh-keygen -t ed25519 -f $HOME/.ssh/borg -C "borg"
+Generating public/private ed25519 key pair.
+Enter passphrase (empty for no passphrase): 
 Enter same passphrase again:
-Your identification has been saved in borg.
-Your public key has been saved in borg.pub.
+Your identification has been saved in $HOME/.ssh/borg.
+Your public key has been saved in $HOME/.ssh/borg.pub.
 The key fingerprint is:
-SHA256:9DzU/jDPyR/vGe8k2Yn1p31wF8UxLzCmYEj//D6+oYk borg
+SHA256:qQ85VIwDOa3gpJB9mkyi0ERoea8PL0bUqPH4ZkicyuQ Borg
 The key's randomart image is:
-+---[RSA 3072]----+
-|     ...o   +  +.|
-|      .o . + o  =|
-|        o o . . o|
-|       . * .   o |
-|        S * +  ..|
-|           o B++=|
-|            o.O**|
-|         . +.. *O|
-|        E o.+o.+O|
++--[ED25519 256]--+
+| B+ .o           |
+|*o*.+..o         |
+|=B.=+oo o        |
+|o.=o.o o .       |
+|. B . . S        |
+| B = . o         |
+|* + + =          |
+|.E * o +         |
+|  + .   .        |
 +----[SHA256]-----+
-
+```
+Public key can be read from `borg.pub`
+Refered to as `$client_key_borg_pub`. 
+```console
 $ cat borg.pub
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCwCdu7RCOmISZQ5cr43lDRPrFoxCXcVfCREYsdTIBEoQrIwyg1jZyzQMf9kORIGcNe5+olIj1aK9qVg0hCEeDSJosSsMP5o8tQJzNu5aYCtnADlZ+AuCgp5CpL1vECMaQsfQV9nju3ScE/+0C/MSYVvDx5sbRvi1XuutBbCAZtlUa7Rn7S8/X08XLFasM7KhFz7AH2Hvvi1i3Cg1WqkRKzpXE/uxntZ/qZxBdpa2WEN/phD4LgmmCbzKJYflhJNKJnYQZxGveGsdexdrDpEbajVECBw/0ntS5/YYaLxzqCrNGyCRdAajIccuOLQjRGzr9U5mdzVpHhkCLjbIDQ1JHxtb9nHxNgvGep7z0UCqawdcJN2nEr1D7Khu7Mh8mryR7iBxqEdPfdARuQn3kMFH+YA5NASTus9p/MR1cavJmBq3u88oNje8q+szkBsQDb1h0n0eAzjjDXRSxgm8bdtpi07TjTNCc+AmhYiym+MYXmbxqMO6pnjjE1I+ht3a8zUU0= borg
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHdfSTP05mWqk/JyGGNWb+Af+l+R2xdBz9p2qu5eimWW borg
 ```
 
-### Step 2: create `borg-append-only` SSH key pair (on computer)
+### 1.2: create `borg-append-only` SSH key pair (on computer)
 
 When asked for file in which to save key, enter `borg-append-only`.
 
 When asked for passphrase, leave field empty for no passphrase.
 
+Refered to as `$client_key_borg_append_only`. 
 ```console
-$ ssh-keygen -t rsa -C "borg-append-only"
-Generating public/private rsa key pair.
-Enter file in which to save the key (/Users/sunknudsen/.ssh/id_rsa): borg-append-only
-Enter passphrase (empty for no passphrase):
-Enter same passphrase again:
-Your identification has been saved in borg-append-only.
-Your public key has been saved in borg-append-only.pub.
+$ ssh-keygen -t ed25519 -f $HOME/.ssh/borg-append-only -C "borg-append-only"
+Generating public/private ed25519 key pair.
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in $HOME/.ssh/borg-append-only
+Your public key has been saved in $HOME/.ssh/borg-append-only.pub
 The key fingerprint is:
-SHA256:Se6MQbWpFg0lWI2+fJ1IVPtUCs/ZRYrgtpz4F3hi2ow borg-append-only
+SHA256:zkdIq1BeZBFmvI9hYfwkoXL/R4wJPC8jcauD1jjWEhw borg-append-only
 The key's randomart image is:
-+---[RSA 3072]----+
-|         +....   |
-|         .B o..  |
-|         ooB.o ..|
-|         .E.....+|
-|        S. o. oo+|
-|        . o o.o+=|
-|       . o = +**+|
-|        o o o.*=B|
-|         . . o o=|
++--[ED25519 256]--+
+|       oO+       |
+|       B* .      |
+|    E =.B*       |
+|   . * *+B.+     |
+|    + o.S+= o    |
+|     B *.=..     |
+|    B * o o .    |
+|   o o . . .     |
+|                 |
 +----[SHA256]-----+
-
-$ cat borg-append-only.pub
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC2cmGUEKwopEN0vpHl2yNoV/wvm21D1hOP/8V886iCawgYpP5SUNpuVTDEgZEFJSvTMtfPaBicln0ULx8bp5NAiOQ8uPIvJD3xaacwISwvCVSYXY8jnQG3eRuhbKCU0aVFLONjnAvo288+NWbVcLw8Y166MPyk+tVz76plmv0LGefrZ0yPG99MngR3E5BLQk1EWQoH1kWGGHNFecFtMLq3usX23Ee4e605gfkWWoj7xSgpujfCHi/re6u7B25cn5t2eR7Ee0qRe/O2Sid2yIma7zK2l9NA0+k7pGngyXUTnGx9bI4+xM5qY0ZJcOQk03UJh52Gx8zXFASOxdGO71FiHvYKz60yyd5dUetPcBOYUygdejdBeBS36bh6SisXE/iI6aOfB/ViZd2ZNne1Fb7ijakyNsDCVEAWkMGJxnN8ZCapGsfG9YhKk/fU92Yxjos+AB1IC3M9Qjq5p8fZGsKdRtzJ3zxtTyk5dQEziAbmBVIJYyFohx/aCUB+MVF9xaM= borg-append-only
 ```
 
-### Step 3: generate SSH authorized keys heredoc (on computer)
+Public key can be read from `borg-append-only.pub`.
+Refered to as `$client_key_borg_append_only_pub`. 
+
+```console
+$ cat $HOME/.ssh/borg-append-only.pub
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIbm3pulYKSp5p4TzkNM0bYlHn+ByBD8VbNd7EWnap2y borg-append-only
+```
+### 1.3: generate SSH authorized keys heredoc
+To be copyied to Server 
 
 #### Set Borg storage quota environment variable
 
 ```shell
 BORG_STORAGE_QUOTA="10G"
+backup_target='/volum1/@backup/borg-backup'
+borg_serve="borg serve --restrict-to-repository $backup_target/$hostname --storage-quota $BORG_STORAGE_QUOTA"
+client_key_borg_pub="$HOME/.ssh/borg.pub"
+client_key_borg_append_only_pub="$HOME/.ssh/borg-append-only.pub"
 ```
 
-#### Generate heredoc (the output of following command will be used at [step 8](#create-homeborgsshauthorized_keys-using-heredoc-generated-at-step-2))
+#### Generate heredoc (the output of following command will be used at [step 2.6](#26-configure-borg-ssh-authorized-keys))
 
+To creat a temperaty file.
 ```shell
-cat << EOF
-cat << "_EOF" > /home/borg/.ssh/authorized_keys
-command="borg serve --restrict-to-repository /home/borg/backup --storage-quota $BORG_STORAGE_QUOTA",restrict $(cat ~/.ssh/borg.pub)
-command="borg serve --append-only --restrict-to-repository /home/borg/backup --storage-quota $BORG_STORAGE_QUOTA",restrict $(cat ~/.ssh/borg-append-only.pub)
-_EOF
+cat << EOF > $HOME/borgbackup.temp.authorized_keys
+command="$borg_serve",restrict ${client_key_borg_pub}
+command="$borg_serve --append-only",restrict ${client_key_borg_append_only_pub}
 EOF
 ```
 
-### Step 4: log in to server or Raspberry Pi
+#### To copy the file to server.
+```shell
+scp  $HOME/borgbackup.temp.authorized_keys server-admin@185.112.147.115:/home/server-admin/borgbackup.temp.authorized_keys
+```
+
+## 2 Setup guide server
+
+### 2.1: log in to server or Raspberry Pi
 
 > Heads-up: replace `~/.ssh/server` with path to private key and `server-admin@185.112.147.115` with server or Raspberry Pi SSH destination.
 
@@ -121,53 +136,37 @@ EOF
 ssh -i ~/.ssh/server server-admin@185.112.147.115
 ```
 
-### Step 5: switch to root
+### 2.2: switch to root
 
 When asked, enter root password.
 
-```shell
+```bash
 su -
 ```
 
-### Step 6: create `borg` user
+### 2.3: update APT index
 
-When asked for password, use output from `openssl rand -base64 24` (and store password in password manager).
-
-All other fields are optional, press <kbd>enter</kbd> to skip them and then press <kbd>Y</kbd>.
-
-```console
-$ adduser borg
-Adding user `borg' ...
-Adding new group `borg' (1000) ...
-Adding new user `borg' (1000) with group `borg' ...
-Creating home directory `/home/borg' ...
-Copying files from `/etc/skel' ...
-New password:
-Retype new password:
-passwd: password updated successfully
-Changing the user information for borg
-Enter the new value, or press ENTER for the default
-	Full Name []:
-	Room Number []:
-	Work Phone []:
-	Home Phone []:
-	Other []:
-Is the information correct? [Y/n] Y
-```
-
-### Step 7: update APT index
-
-```shell
+```bash
 apt update
 ```
+### 2.4: create `borg` user
 
-### Step 8: install [Borg](https://github.com/borgbackup/borg)
+`$backup-target` is your root directory for borg-target example: `/volum1/@backup/borg-backup`
 
-```shell
+```console
+$ adduser --home $backup-target --system borg --shell /bin/bash
+Adding system user `borg' (UID 130) ...
+Adding new user `borg' (UID 130) with group `nogroup' ...
+Creating home directory `/volum1/@backup/borg-backup' ...
+```
+
+### 2.5: install [Borg](https://github.com/borgbackup/borg)
+
+```bash
 apt install -y borgbackup
 ```
 
-### Step 9: configure borg SSH authorized keys
+### 2.6: configure borg SSH authorized keys
 
 #### Create `.ssh` directory
 
@@ -175,19 +174,24 @@ apt install -y borgbackup
 mkdir -p /home/borg/.ssh
 ```
 
-#### Create `/home/borg/.ssh/authorized_keys` using heredoc generated at [step 2](#generate-heredoc-the-output-of-following-command-will-be-used-at-step-8)
+#### Create `/home/borg/.ssh/authorized_keys` using heredoc generated at [step 1.3](#13-generate-ssh-authorized-keys-heredoc)
 
 ```shell
 cat << "_EOF" > /home/borg/.ssh/authorized_keys
-command="borg serve --restrict-to-repository /home/borg/backup --storage-quota 10G",restrict ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCwCdu7RCOmISZQ5cr43lDRPrFoxCXcVfCREYsdTIBEoQrIwyg1jZyzQMf9kORIGcNe5+olIj1aK9qVg0hCEeDSJosSsMP5o8tQJzNu5aYCtnADlZ+AuCgp5CpL1vECMaQsfQV9nju3ScE/+0C/MSYVvDx5sbRvi1XuutBbCAZtlUa7Rn7S8/X08XLFasM7KhFz7AH2Hvvi1i3Cg1WqkRKzpXE/uxntZ/qZxBdpa2WEN/phD4LgmmCbzKJYflhJNKJnYQZxGveGsdexdrDpEbajVECBw/0ntS5/YYaLxzqCrNGyCRdAajIccuOLQjRGzr9U5mdzVpHhkCLjbIDQ1JHxtb9nHxNgvGep7z0UCqawdcJN2nEr1D7Khu7Mh8mryR7iBxqEdPfdARuQn3kMFH+YA5NASTus9p/MR1cavJmBq3u88oNje8q+szkBsQDb1h0n0eAzjjDXRSxgm8bdtpi07TjTNCc+AmhYiym+MYXmbxqMO6pnjjE1I+ht3a8zUU0= borg
-command="borg serve --append-only --restrict-to-repository /home/borg/backup --storage-quota 10G",restrict ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC2cmGUEKwopEN0vpHl2yNoV/wvm21D1hOP/8V886iCawgYpP5SUNpuVTDEgZEFJSvTMtfPaBicln0ULx8bp5NAiOQ8uPIvJD3xaacwISwvCVSYXY8jnQG3eRuhbKCU0aVFLONjnAvo288+NWbVcLw8Y166MPyk+tVz76plmv0LGefrZ0yPG99MngR3E5BLQk1EWQoH1kWGGHNFecFtMLq3usX23Ee4e605gfkWWoj7xSgpujfCHi/re6u7B25cn5t2eR7Ee0qRe/O2Sid2yIma7zK2l9NA0+k7pGngyXUTnGx9bI4+xM5qY0ZJcOQk03UJh52Gx8zXFASOxdGO71FiHvYKz60yyd5dUetPcBOYUygdejdBeBS36bh6SisXE/iI6aOfB/ViZd2ZNne1Fb7ijakyNsDCVEAWkMGJxnN8ZCapGsfG9YhKk/fU92Yxjos+AB1IC3M9Qjq5p8fZGsKdRtzJ3zxtTyk5dQEziAbmBVIJYyFohx/aCUB+MVF9xaM= borg-append-only
+command="borg serve --restrict-to-repository /volum1/@backup/borg-backup/client1 --storage-quota 10G",restrict ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHdfSTP05mWqk/JyGGNWb+Af+l+R2xdBz9p2qu5eimWW borg
+command="borg serve --restrict-to-repository /volum1/@backup/borg-backup/client1 --storage-quota 10G --append-only",restrict ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIbm3pulYKSp5p4TzkNM0bYlHn+ByBD8VbNd7EWnap2y borg-append-only
 _EOF
 ```
 
-#### Change ownership of `/home/borg/.ssh`
+### 2.7 Change ownership and Permissions of `$backup_target`
 
-```
-chown -R borg:borg /home/borg/.ssh
+```shell
+chown -R borg:borg $backup_target/.ssh
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/config  
+chmod 600 ~/.ssh/authorized_keys 
+chmod 600 ~/.ssh/id*
+chmod 644 ~/.ssh/*.pub
 ```
 
 👍
